@@ -78,6 +78,8 @@ class Soldier(pygame.sprite.Sprite):
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
+        # create ai specific variables
+        self.move_counter = 0
         # load all images for the players
         animation_types = ['Idle', 'Run', 'Jump', 'Death', 'Crouch']
         for animation in animation_types:
@@ -143,6 +145,19 @@ class Soldier(pygame.sprite.Sprite):
                                 0.99 * self.rect.centery, self.direction)
             bullet_group.add(bullet)
             self.ammo -= 1
+
+    def ai(self):
+        if self.alive and player.alive:
+            if self.direction == 1:
+                ai_moving_right = True
+            else:
+                ai_moving_right = False
+            ai_moving_left = not ai_moving_right
+            self.move(ai_moving_left, ai_moving_right)
+            self.move_counter += 1
+            if self.move_counter > TILE_SIZE:
+                self.direction *= -1
+                self.move_counter *= -1
 
     def update_animation(self):
         # update animation
@@ -331,11 +346,11 @@ item_box_group.add(item_box)
 item_box = ItemBox('Grenade', 500, 250)
 item_box_group.add(item_box)
 
-player = Soldier("Player", 200, 200, 3, 5, 20, 5)
+player = Soldier("Player", 200, 200, 1.65, 5, 20, 5)
 health_bar = HealthBar(10, 10, player.health, player.health)
 
-enemy = Soldier('Enemy', 400, 200, 3, 5, 20, 0)
-enemy2 = Soldier('Enemy', 300, 300, 3, 5, 20, 0)
+enemy = Soldier('Enemy', 400, 200, 1.65, 5, 20, 0)
+enemy2 = Soldier('Enemy', 300, 200, 1.65, 5, 20, 0)
 enemy_group.add(enemy)
 enemy_group.add(enemy2)
 run = True
@@ -357,6 +372,7 @@ while run:
     player.draw()
 
     for enemy in enemy_group:
+        enemy.ai()
         enemy.update()
         enemy.draw()
 
@@ -429,5 +445,4 @@ while run:
             if event.key == pygame.K_s:
                 player.crouch = False
     pygame.display.update()
-    print("sprawdzam githuba")
 pygame.quit()
