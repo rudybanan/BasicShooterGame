@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 
 pygame.init()
 
@@ -80,6 +81,9 @@ class Soldier(pygame.sprite.Sprite):
         self.update_time = pygame.time.get_ticks()
         # create ai specific variables
         self.move_counter = 0
+        self.vision = pygame.Rect(0, 0, 150, 20)
+        self.idling = False
+        self.idling_counter = 0
         # load all images for the players
         animation_types = ['Idle', 'Run', 'Jump', 'Death', 'Crouch']
         for animation in animation_types:
@@ -141,23 +145,39 @@ class Soldier(pygame.sprite.Sprite):
                 bullet = Bullet(self.rect.centerx + (0.55 * self.rect.size[0] * self.direction),
                                 1.04 * self.rect.centery, self.direction)
             else:
-                bullet = Bullet(self.rect.centerx + (0.62 * self.rect.size[0] * self.direction),
+                bullet = Bullet(self.rect.centerx + (0.7 * self.rect.size[0] * self.direction),
                                 0.99 * self.rect.centery, self.direction)
             bullet_group.add(bullet)
             self.ammo -= 1
 
     def ai(self):
         if self.alive and player.alive:
-            if self.direction == 1:
-                ai_moving_right = True
+            if not self.idling and random.randint(1, 200) == 1:
+                self.update_action(0)
+                self.idling = True
+                self.idling_counter = 50
+            if self.vision.colliderect(player.rect):
+                self.update_action(0)  # 0: idle
+                self.shoot()
             else:
-                ai_moving_right = False
-            ai_moving_left = not ai_moving_right
-            self.move(ai_moving_left, ai_moving_right)
-            self.move_counter += 1
-            if self.move_counter > TILE_SIZE:
-                self.direction *= -1
-                self.move_counter *= -1
+                if not self.idling:
+                    if self.direction == 1:
+                        ai_moving_right = True
+                    else:
+                        ai_moving_right = False
+                    ai_moving_left = not ai_moving_right
+                    self.move(ai_moving_left, ai_moving_right)
+                    self.update_action(1)
+                    self.move_counter += 1
+                    # update ai vision as the enemy moves
+                    self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
+                    if self.move_counter > TILE_SIZE:
+                        self.direction *= -1
+                        self.move_counter *= -1
+                else:
+                    self.idling_counter -= 1
+                    if self.idling_counter == 0:
+                        self.idling = False
 
     def update_animation(self):
         # update animation
@@ -349,8 +369,8 @@ item_box_group.add(item_box)
 player = Soldier("Player", 200, 200, 1.65, 5, 20, 5)
 health_bar = HealthBar(10, 10, player.health, player.health)
 
-enemy = Soldier('Enemy', 400, 200, 1.65, 5, 20, 0)
-enemy2 = Soldier('Enemy', 300, 200, 1.65, 5, 20, 0)
+enemy = Soldier('Enemy', 400, 200, 1.65, 2, 20, 0)
+enemy2 = Soldier('Enemy', 300, 200, 1.65, 2, 20, 0)
 enemy_group.add(enemy)
 enemy_group.add(enemy2)
 run = True
