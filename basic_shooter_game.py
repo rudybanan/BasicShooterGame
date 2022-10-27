@@ -150,7 +150,7 @@ class Soldier(pygame.sprite.Sprite):
             bullet_group.add(bullet)
             self.ammo -= 1
 
-    def ai(self):
+    def AI(self):
         if self.alive and player.alive:
             if not self.idling and random.randint(1, 200) == 1:
                 self.update_action(0)
@@ -169,7 +169,7 @@ class Soldier(pygame.sprite.Sprite):
                     self.move(ai_moving_left, ai_moving_right)
                     self.update_action(1)
                     self.move_counter += 1
-                    # update ai vision as the enemy moves
+                    # update AI vision as the enemy moves
                     self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
                     if self.move_counter > TILE_SIZE:
                         self.direction *= -1
@@ -235,7 +235,7 @@ class ItemBox(pygame.sprite.Sprite):
             self.kill()
 
 
-class HealthBar():
+class HealthBar:
     def __init__(self, x, y, health, max_health):
         self.x = x
         self.y = y
@@ -392,7 +392,7 @@ while run:
     player.draw()
 
     for enemy in enemy_group:
-        enemy.ai()
+        enemy.AI()
         enemy.update()
         enemy.draw()
 
